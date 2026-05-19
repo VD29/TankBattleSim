@@ -20,6 +20,19 @@ target_include_directories(tank_engine INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/src
 add_executable(tank_sim src/main.cpp)
 target_link_libraries(tank_sim PRIVATE tank_engine)
 
+# --- nlohmann/json: prefer system install, fall back to FetchContent ---
+find_package(nlohmann_json QUIET)
+if(NOT nlohmann_json_FOUND)
+    include(FetchContent)
+    FetchContent_Declare(
+        nlohmann_json
+        GIT_REPOSITORY https://github.com/nlohmann/json.git
+        GIT_TAG        v3.11.3
+    )
+    FetchContent_MakeAvailable(nlohmann_json)
+endif()
+target_link_libraries(tank_engine INTERFACE nlohmann_json::nlohmann_json)
+
 # --- Google Test: prefer system install, fall back to FetchContent ---
 find_package(GTest QUIET)
 if(NOT GTest_FOUND)
