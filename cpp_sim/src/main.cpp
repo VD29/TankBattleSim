@@ -24,6 +24,7 @@
 static constexpr int   TANKS_PER_TEAM = 64;
 static constexpr float DT             = 0.016f;
 static constexpr int   MAX_TICKS      = 500'000;
+static constexpr int   POS_LOG_EVERY  = 5;   // log positions every N ticks
 
 static void spawnTank(World& world, float x, float y, Team team) {
     const auto id = world.createEntity();
@@ -73,6 +74,20 @@ static SimResult runSim(int numThreads, const std::string& logPath) {
         auto aiFut  = js.submit([&] { aiSys.update(world, DT); });
         movFut.get();
         aiFut.get();
+
+        // Log positions of alive tanks every POS_LOG_EVERY ticks.
+        if (tick % POS_LOG_EVERY == 0) {
+            for (const auto pid : world.view<Transform, Health>()) {
+                if (world.getComponent<Health>(pid).isDead()) continue;
+                const auto& pt = world.getComponent<Transform>(pid);
+                logger->log("tank_moved", pid, {
+                    {"id",   static_cast<int>(pid)},
+                    {"x",    pt.x},
+                    {"y",    pt.y},
+                    {"tick", tick}
+                });
+            }
+        }
 
         combatSys.update(world, DT);
 
