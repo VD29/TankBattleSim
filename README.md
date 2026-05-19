@@ -34,6 +34,10 @@ A real-time tank battle simulator with a C++ ECS engine, pygame visualizer, and 
 
 ---
 
+![Battle Visualizer](docs/screenshot.png)
+
+---
+
 ## Components
 
 ### `cpp_sim/` — C++17 ECS Battle Engine
