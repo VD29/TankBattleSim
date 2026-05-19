@@ -1,6 +1,7 @@
 add_executable(tank_tests
     test_ecs.cpp
     test_threading.cpp
+    test_components.cpp
 )
 
 target_link_libraries(tank_tests
