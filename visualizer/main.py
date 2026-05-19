@@ -55,6 +55,8 @@ def main() -> None:
 
         # ── Sim data ──────────────────────────────────────────────────────────
         if not paused:
+            reader.advance()
+        else:
             reader.poll()
 
         waiting = not LOG_PATH.exists()
