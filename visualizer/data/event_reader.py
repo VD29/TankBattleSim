@@ -103,6 +103,10 @@ class EventReader:
         return None
 
     @property
+    def total_events(self) -> int:
+        return len(self._buffer)
+
+    @property
     def recent_events(self) -> List[str]:
         return self.events[-10:]
 

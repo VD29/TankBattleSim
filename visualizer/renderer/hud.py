@@ -90,28 +90,20 @@ def draw_bottom_bar(surface: pygame.Surface,
     surface.fill(BOTTOM_BG)
     pygame.draw.line(surface, DIVIDER, (0, 0), (WINDOW_W, 0), 1)
 
-    sim_time = reader.tick * SIM_DT
-    left = (f"Tick {reader.tick:>5}  |  Sim {sim_time:>6.1f}s  |  "
-            f"Kills A:{reader.kills_a}  B:{reader.kills_b}")
-    left_surf = font.render(left, True, TEXT_COLOR)
-    surface.blit(left_surf, (6, (BOTTOM_BAR_H := surface.get_height()) // 2 - left_surf.get_height() // 2))
+    bar_h = surface.get_height()
+    cy = bar_h // 2
 
-    winner = reader.winner
-    if winner:
-        centre_txt = f"⚑  {winner} wins!"
-        colour     = ACCENT_A if "A" in winner else ACCENT_B if "B" in winner else YELLOW
-        c_surf = font.render(centre_txt, True, colour)
-        surface.blit(c_surf, (BATTLE_W // 2 - c_surf.get_width() // 2,
-                               BOTTOM_BAR_H // 2 - c_surf.get_height() // 2))
-    elif paused:
-        p_surf = font.render("⏸  PAUSED", True, YELLOW)
-        surface.blit(p_surf, (BATTLE_W // 2 - p_surf.get_width() // 2,
-                               BOTTOM_BAR_H // 2 - p_surf.get_height() // 2))
+    sim_time   = reader.tick * SIM_DT
+    paused_tag = "  | PAUSED" if paused else ""
+    left = (f"Tick {reader.tick:>5}  |  Sim {sim_time:>6.1f}s  |  "
+            f"Kills A:{reader.kills_a}  B:{reader.kills_b}{paused_tag}")
+    left_surf = font.render(left, True, TEXT_COLOR)
+    surface.blit(left_surf, (6, cy - left_surf.get_height() // 2))
 
     fps_str  = f"FPS {fps:>4.0f}"
     fps_surf = font.render(fps_str, True, DIM_COLOR)
     surface.blit(fps_surf, (WINDOW_W - fps_surf.get_width() - 6,
-                             BOTTOM_BAR_H // 2 - fps_surf.get_height() // 2))
+                             cy - fps_surf.get_height() // 2))
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────

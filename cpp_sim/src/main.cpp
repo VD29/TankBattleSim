@@ -41,13 +41,13 @@ struct SimResult {
     int         ticks;
 };
 
-static SimResult runSim(int numThreads, const std::string& logPath) {
+static SimResult runSim(int numThreads, const std::string& logPath, uint32_t seed) {
     { std::ofstream f(logPath, std::ios::trunc); }   // clear log before each run
 
     World world;
     auto logger = std::make_shared<EventLogger>(logPath);
 
-    std::mt19937 rng(42);   // fixed seed — same battle every run
+    std::mt19937 rng(seed);
     std::uniform_real_distribution<float> yDist (  0.0f, 600.0f);
     std::uniform_real_distribution<float> xDistA(  0.0f, 300.0f);
     std::uniform_real_distribution<float> xDistB(500.0f, 800.0f);
@@ -125,7 +125,8 @@ static void runBenchmark() {
     for (std::size_t i = 0; i < configs.size(); ++i) {
         std::cout << "  " << configs[i] << " thread(s)... " << std::flush;
         results[i] = runSim(configs[i],
-            "/tmp/tank_bench_" + std::to_string(configs[i]) + ".jsonl");
+            "/tmp/tank_bench_" + std::to_string(configs[i]) + ".jsonl",
+            42u);
         std::cout << std::fixed << std::setprecision(3)
                   << results[i].wallSec << "s\n";
     }
@@ -162,7 +163,27 @@ static void runBenchmark() {
 // ── main ─────────────────────────────────────────────────────────────────────
 
 int main(int argc, char* argv[]) {
-    const bool benchmark = argc > 1 && std::string(argv[1]) == "--benchmark";
+    bool     benchmark = false;
+    bool     hasSeed   = false;
+    uint32_t seed      = 0;
+
+    for (int i = 1; i < argc; ++i) {
+        const std::string arg(argv[i]);
+        if (arg == "--benchmark") {
+            benchmark = true;
+        } else if (arg == "--seed" && i + 1 < argc) {
+            try {
+                seed    = static_cast<uint32_t>(std::stoul(argv[++i]));
+                hasSeed = true;
+            } catch (const std::exception& e) {
+                std::cerr << "Invalid seed '" << argv[i] << "': " << e.what() << "\n";
+            }
+        }
+    }
+
+    if (!hasSeed) {
+        seed = std::random_device{}();
+    }
 
     if (benchmark) {
         runBenchmark();
@@ -171,9 +192,10 @@ int main(int argc, char* argv[]) {
         const int  threads   = hwThreads > 0 ? static_cast<int>(hwThreads) : 4;
 
         std::cout << "TankBattleSim — " << TANKS_PER_TEAM
-                  << " tanks/team, " << threads << " thread(s)\n";
+                  << " tanks/team, " << threads << " thread(s)\n"
+                  << "Seed: " << seed << "\n";
 
-        const auto r = runSim(threads, "../../shared/battle_log.jsonl");
+        const auto r = runSim(threads, "../../shared/battle_log.jsonl", seed);
 
         std::cout << "Winner:   " << r.winner << "\n"
                   << "Duration: " << std::fixed << std::setprecision(3)
